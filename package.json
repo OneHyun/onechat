@@ -1,0 +1,26 @@
+{
+  "name": "onechat",
+  "version": "1.0.0",
+  "description": "OneChat (Zoom Clone) using WebRTC and Websockets",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.17.10",
+    "@babel/core": "^7.18.2",
+    "@babel/node": "^7.17.10",
+    "@babel/preset-env": "^7.18.2",
+    "nodemon": "^2.0.16"
+  },
+  "dependencies": {
+    "express": "^4.18.1",
+    "pug": "^3.0.2",
+    "socket.io": "^4.5.1",
+    "ws": "^8.7.0"
+  }
+}
