@@ -10,5 +10,18 @@ html(lang="en")
         header
             h1 OneChat
         main
+            div#welcome
+                form
+                    input#roomName(placeholder="방 이름", required, type="text")
+                    input#nickName(placeholder="사용자 이름", required, type="text")
+                    button 입장
+                h4 Open Rooms:
+                ul
+            div#room
+                h3#room__title
+                ul
+                form#msg
+                    input(placeholder="message", required, type="text")
+                    button Send
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js")
