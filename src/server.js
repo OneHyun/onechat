@@ -1,6 +1,6 @@
 import http from "http";
-import { WebSocketServer } from "ws";
 import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 import express from "express";
 import path from "path";
 
@@ -15,7 +15,16 @@ app.get("/", (_, res) => res.render("home"));
 app.get("/*", (_, res) => res.redirect("/"));
 
 const httpServer = http.createServer(app);
-const wsServer = new Server(httpServer);
+const wsServer = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true,
+  },
+});
+
+instrument(wsServer, {
+  auth: false,
+});
 
 const getPublicRooms = () => {
   const { rooms, sids } = wsServer.sockets.adapter;
@@ -23,10 +32,15 @@ const getPublicRooms = () => {
   let publicRooms = [];
   rooms.forEach((value, key) => {
     if (!sids.get(key)) {
-      publicRooms.push(key);
+      const userCount = getCountRoom(key);
+      publicRooms.push({ key, userCount });
     }
   });
   return publicRooms;
+};
+
+const getCountRoom = (roomName) => {
+  return wsServer.sockets.adapter.rooms.get(roomName)?.size;
 };
 const onSocketConnection = (socket) => {
   socket["nickname"] = "Guest";
@@ -37,8 +51,9 @@ const onSocketConnection = (socket) => {
 
   socket.on("enter_room", (roomName, done) => {
     socket.join(roomName);
-    done(roomName);
-    socket.to(roomName).emit("welcome", socket.nickname);
+    const userCount = getCountRoom(roomName);
+    done(roomName, userCount);
+    socket.to(roomName).emit("welcome", socket.nickname, userCount);
     wsServer.sockets.emit("room_change", getPublicRooms());
   });
 
@@ -48,7 +63,7 @@ const onSocketConnection = (socket) => {
 
   socket.on("disconnecting", () => {
     socket.rooms.forEach((room) =>
-      socket.to(room).emit("bye", socket.nickname)
+      socket.to(room).emit("bye", socket.nickname, getCountRoom(room) - 1)
     );
   });
   socket.on("new_message", (msg, room, done) => {
@@ -60,40 +75,6 @@ const onSocketConnection = (socket) => {
 };
 
 wsServer.on("connection", onSocketConnection);
-/*
-const wss = new WebSocketServer({ server: httpServer });
-
-const sockets = [];
-const onSocketClose = (socket) => {
-  console.log("Disconnected from the Browser ❌");
-  //sockets.splice(sockets.indexOf({ _closeCode: socket }), 1);
-  //console.log("close", sockets.length);
-};
-
-const onSocketConnection = (socket) => {
-  sockets.push(socket);
-  nickname["nickname"] = "Anon";
-  console.log("Connected to Browser ✅");
-  console.log("connect", sockets);
-
-  socket.on("close", onSocketClose);
-  socket.on("message", (msg) => {
-    const message = JSON.parse(msg);
-    console.log(message);
-    switch (message.type) {
-      case "new_message":
-        sockets.forEach((aSocket) =>
-          aSocket.send(`${socket.nickname}: ${message.payload}`)
-        );
-        break;
-      case "nickname":
-        socket["nickname"] = message.payload;
-        break;
-    }
-  });
-};
-
-wss.on("connection", onSocketConnection);*/
 const handleListen = () =>
   console.log(`✅ Server listening on port http://localhost:${PORT} 🐾`);
 

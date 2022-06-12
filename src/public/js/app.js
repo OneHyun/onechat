@@ -3,6 +3,7 @@ const socket = io();
 const welcome = document.getElementById("welcome");
 const welcomeForm = welcome.querySelector("form");
 const room = document.getElementById("room");
+const roomTitleHeader = document.getElementById("room__title");
 
 room.hidden = true;
 let roomName;
@@ -32,11 +33,10 @@ const handleNicknameSubmit = (event) => {
   input.value = "";
 };
 
-const showRoom = (roomTitle) => {
+const showRoom = (roomTitle, userCount) => {
   welcome.hidden = true;
   room.hidden = false;
-  const roomTitleHeader = document.getElementById("room__title");
-  roomTitleHeader.innerText = `Room ${roomTitle}`;
+  roomTitleHeader.innerText = `Room ${roomTitle} (${userCount})`;
 
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
@@ -55,17 +55,20 @@ const handleRoomSubmit = (event) => {
 };
 welcomeForm.addEventListener("submit", handleRoomSubmit);
 
-socket.on("welcome", (user) => {
+socket.on("welcome", (user, userCount) => {
+  roomTitleHeader.innerText = `Room ${roomName} (${userCount})`;
   addMessage(`${user} join`);
 });
 
-socket.on("bye", (user) => {
+socket.on("bye", (user, userCount) => {
+  roomTitleHeader.innerText = `Room ${roomName} (${userCount})`;
   addMessage(`${user} left`);
 });
 
 socket.on("new_message", addMessage);
 
 const updateRoomList = (rooms) => {
+  console.log(rooms);
   const roomList = welcome.querySelector("ul");
   roomList.innerHTML = "";
   if (rooms.length === 0) {
@@ -73,7 +76,7 @@ const updateRoomList = (rooms) => {
   }
   rooms.forEach((room) => {
     const li = document.createElement("li");
-    li.innerText = room;
+    li.innerText = `${room["key"]} / 사용자 ${room["userCount"]}명`;
     roomList.appendChild(li);
   });
 };
