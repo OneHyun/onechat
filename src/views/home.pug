@@ -10,6 +10,12 @@ html(lang="en")
         header
             h1 OneChat
         main
+            div#myStream
+                video#myVideo(autoplay,playsinline, width="400", height="400")
+                button#mute Mute
+                button#camera Turn Camera Off
+                select#cameras
+                select#mikes
             div#welcome
                 form
                     input#roomName(placeholder="방 이름", required, type="text")
@@ -25,3 +31,4 @@ html(lang="en")
                     button Send
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js")
+        script(src="/public/js/camera.js")

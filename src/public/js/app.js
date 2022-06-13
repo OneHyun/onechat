@@ -68,7 +68,6 @@ socket.on("bye", (user, userCount) => {
 socket.on("new_message", addMessage);
 
 const updateRoomList = (rooms) => {
-  console.log(rooms);
   const roomList = welcome.querySelector("ul");
   roomList.innerHTML = "";
   if (rooms.length === 0) {
