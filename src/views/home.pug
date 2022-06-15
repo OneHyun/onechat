@@ -10,25 +10,16 @@ html(lang="en")
         header
             h1 OneChat
         main
-            div#myStream
-                video#myVideo(autoplay,playsinline, width="400", height="400")
-                button#mute Mute
-                button#camera Turn Camera Off
-                select#cameras
-                select#mikes
             div#welcome
-                form
-                    input#roomName(placeholder="방 이름", required, type="text")
-                    input#nickName(placeholder="사용자 이름", required, type="text")
-                    button 입장
-                h4 Open Rooms:
-                ul
-            div#room
-                h3#room__title
-                ul
-                form#msg
-                    input(placeholder="message", required, type="text")
-                    button Send
+                form    
+                    input(placeholder="room name", required, type="text")
+                    button Enter room
+            div#call
+                div#myStream
+                    video#myVideo(autoplay,playsinline, width="400", height="400")
+                    button#mute Mute
+                    button#camera Turn Camera Off
+                    select#cameras
+                    select#mikes
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js")
-        script(src="/public/js/camera.js")

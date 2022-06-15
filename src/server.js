@@ -32,36 +32,22 @@ const getPublicRooms = () => {
 const getCountRoom = (roomName) => {
   return wsServer.sockets.adapter.rooms.get(roomName)?.size;
 };
+
 const onSocketConnection = (socket) => {
-  socket["nickname"] = "Guest";
-  socket.emit("room_change", getPublicRooms());
-  socket.onAny((event) => {
-    console.log(`Socket Event: ${event}`);
-  });
+  console.log("connetced");
 
-  socket.on("enter_room", (roomName, done) => {
+  socket.on("join_room", (roomName) => {
     socket.join(roomName);
-    const userCount = getCountRoom(roomName);
-    done(roomName, userCount);
-    socket.to(roomName).emit("welcome", socket.nickname, userCount);
-    wsServer.sockets.emit("room_change", getPublicRooms());
+    socket.to(roomName).emit("welcome");
   });
 
-  socket.on("disconnect", () => {
-    wsServer.sockets.emit("room_change", getPublicRooms());
+  socket.on("offer", (offer, roomName) => {
+    socket.to(roomName).emit("offer", offer);
   });
 
-  socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) =>
-      socket.to(room).emit("bye", socket.nickname, getCountRoom(room) - 1)
-    );
+  socket.on("answer", (answer, roomName) => {
+    socket.to(roomName).emit("answer", answer);
   });
-  socket.on("new_message", (msg, room, done) => {
-    socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
-    done();
-  });
-
-  socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
 };
 
 wsServer.on("connection", onSocketConnection);
