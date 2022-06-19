@@ -1,0 +1,73 @@
+/* Reset */
+@import "./reset.css";
+
+/* Sections */
+@import "./waitSection.css";
+@import "./chatSection.css";
+
+/* Fonts */
+@font-face {
+  font-family: "MaplestoryOTFLight";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/MaplestoryOTFLight.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "MaplestoryOTFLight";
+  overflow: scroll;
+  background-color: #3f3f3f;
+  min-width: 400px;
+  min-height: 400px;
+}
+
+footer {
+  text-align: center;
+  color: white;
+  opacity: 0.8;
+  margin: 0px 26px;
+  margin-top: 50px;
+}
+
+#entrance--section,
+#chatroom--section {
+  position: relative;
+  display: flex;
+  height: 80vh;
+  min-height: 550px;
+
+  transition: opacity 0.5s linear;
+}
+
+main > h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 20px 15px;
+  color: white;
+}
+
+.side {
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  width: 30%;
+}
+@media (max-width: 450px) {
+  #room-list {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    grid-auto-rows: 19%;
+    gap: 5px;
+  }
+}
+
+@media (min-width: 451px) {
+  #room-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 24%;
+    gap: 5px;
+  }
+}

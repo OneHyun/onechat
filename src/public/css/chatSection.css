@@ -1,0 +1,214 @@
+#chatroom--section {
+  background-color: #16161675;
+  background-image: linear-gradient(
+      45deg,
+      #64646475 25%,
+      transparent 25%,
+      transparent 75%,
+      #64646475 75%,
+      #64646475
+    ),
+    linear-gradient(
+      45deg,
+      #64646475 25%,
+      transparent 25%,
+      transparent 75%,
+      #64646475 75%,
+      #64646475
+    );
+  background-position: 0 0, 25px 25px;
+  background-size: 50px 50px;
+  min-width: 800px;
+  padding: 10px 0;
+}
+
+#chatroom--header-btns {
+  width: 95%;
+  height: 7%;
+  padding: 5px;
+  padding-top: 15px;
+  opacity: 0.91;
+  background-color: white;
+  border-top-left-radius: 15px;
+}
+
+#backbtn {
+  width: 30px;
+  height: 30px;
+
+  font-size: 30px;
+
+  color: black;
+  transition: color 0.3s ease-in-out;
+}
+#backbtn:hover {
+  color: rgb(176, 176, 255);
+}
+
+#streams {
+  width: 95%;
+  height: 88%;
+
+  background-color: white;
+  opacity: 0.91;
+  padding: 5px;
+
+  margin-bottom: 10px;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  place-items: center;
+  gap: 10px;
+}
+
+#streams video {
+  width: 90%;
+  min-height: 350px;
+  max-height: 400px;
+  background-color: #161616;
+}
+#chatroom-function {
+  width: 95%;
+  padding: 5px;
+  height: 5%;
+  border-bottom-left-radius: 15px;
+  background-color: white;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  overflow: hidden;
+}
+#mute {
+  margin-left: 10px;
+}
+#mute,
+#camera {
+  border: 1px dashed rgb(176, 176, 255);
+  font-family: "MaplestoryOTFLight";
+  font-size: 12px;
+
+  width: 90px;
+  padding: 10px;
+  transition: background-color 0.3s ease-in-out;
+
+  min-width: 50px;
+  overflow: hidden;
+}
+
+#mute:hover,
+#camera:hover {
+  border: 1px dashed rgb(255, 255, 255);
+  background-color: rgb(176, 176, 255);
+}
+
+#chatroom-log {
+  gap: 5px;
+  overflow: scroll;
+  overflow-x: hidden;
+  width: 95%;
+  height: 90%;
+
+  border-top-right-radius: 15px;
+  background-color: white;
+  opacity: 0.97;
+  padding: 5px;
+}
+
+#chatting {
+  width: 95%;
+  height: 5%;
+
+  opacity: 0.97;
+  background-color: white;
+  margin-bottom: 10px;
+  padding: 5px;
+
+  direction: ltr;
+
+  overflow: hidden;
+}
+
+#chatting-form {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid #161616;
+  padding-top: 5px;
+}
+
+#chatting-form input {
+  outline: none;
+  border: none;
+  border-bottom: 0px solid rgb(176, 176, 255);
+
+  font-family: "MaplestoryOTFLight";
+  font-size: 14px;
+  width: 70%;
+  transition: border-bottom 0.3s ease-in-out;
+
+  max-height: 30px;
+}
+
+#chatting-form input:focus {
+  border-bottom: 2px solid rgb(176, 176, 255);
+}
+
+#chatting-form button {
+  width: 15%;
+  min-width: 36px;
+  max-height: 100%;
+}
+
+#chat {
+  display: flex;
+  padding: 5px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+#chat.other {
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+#chat bdi {
+  display: flex;
+  font-size: 16px;
+  max-width: 60%;
+
+  padding: 10px 3px;
+}
+
+#chat.other bdi {
+  background-color: rgb(255, 227, 227);
+  justify-content: flex-end;
+  align-items: flex-end;
+  text-align: start;
+
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+#chat.mine bdi {
+  background-color: #e7e7ff;
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+
+  text-align: start;
+}
+#chat-log {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+
+  font-size: 16px;
+  border-radius: 15px;
+
+  margin-bottom: 10px;
+}

@@ -4,23 +4,59 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css")
+        link(rel="stylesheet", href="/public/css/style.css")
         title OneChat
-        link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     body
-        header
-            h1 OneChat
         main
-            div#welcome
-                form    
-                    input(placeholder="room name", required, type="text")
-                    button Enter room
-            div#call
-                div#myStream
-                    video#myVideo(autoplay,playsinline, width="400", height="400")
-                    button#mute Mute
-                    button#camera Turn Camera Off
-                    select#cameras
-                    select#mikes
-                    video#peerFace(autoplay,playsinline, width="400", height="400")
+            h1 OneChat Korea
+            section#entrance--section
+                div#welcome.main
+                    div#main-title
+                        h1 OneChat에 오신 것을 환영합니다.
+                        h3 대기방을 클릭 또는 입력하시면 입장이 가능합니다.
+                    div#room-list
+                    div#room-join
+                        form#join-form
+                            input(placeholder="생성 또는 참여할 방 제목을 입력해보세요.", required, type="text")
+                            button 입장
+
+                div#openroom--list.side
+                    div#notice
+                        h1 개발 노트
+                        div
+                            bdi 이 버전의 빌드 날짜는 22년 6월 20일자입니다.
+                        div
+                            bdi 현재 버전은 1:1 까지만 통화를 지원합니다.
+                        div
+                            bdi 향후 N:N 연결 기능과, 귓속말 등 다양한 기능에 대해서 고려 중입니다.
+                    div#nickname
+                        form#nickname-form 
+                            input(placeholder="나만의 닉네임을 입력하세요.", required, type="text")
+                            button 저장
+            section#chatroom--section
+                div#call.main
+                    div#chatroom--header-btns
+                        span#backbtn
+                            i.fas.fa-arrow-circle-left
+                    div#streams
+                        video#myVideo(autoplay,playsinline)
+                        video#otherVideo(autoplay,playsinline)
+                    div#chatroom-function
+                        button#mute 마이크 미사용
+                        button#camera 카메라 미사용
+                        select#cameras
+                        select#mikes
+                div#chatroom--chatting-log.side
+                    div#chatroom-log
+                    div#chatting
+                        form#chatting-form
+                            input(placeholder="메시지를 입력해보세요", required, type="text")
+                            button 전송
+                    div#nickname
+                            form#nickname-form 
+                                input(placeholder="나만의 닉네임을 입력하세요.", required, type="text")
+                                button 저장
+            include ./partials/footer
         script(src="/socket.io/socket.io.js") 
         script(src="/public/js/app.js")

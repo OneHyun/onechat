@@ -4,16 +4,21 @@ const myVideo = document.getElementById("myVideo");
 const muteBtn = document.getElementById("mute");
 const cameraBtn = document.getElementById("camera");
 const camerasSelect = document.getElementById("cameras");
-const mikeSelect = document.getElementById("mikes");
+const mikesSelect = document.getElementById("mikes");
+const backbtn = document.getElementById("backbtn");
 
-const call = document.getElementById("call");
-call.hidden = true;
+const waitingroomSection = document.getElementById("entrance--section");
+const chatroomSection = document.getElementById("chatroom--section");
+chatroomSection.style.display = "none";
+chatroomSection.style.opacity = 0;
 
-let myStream;
+let currStream;
 let muted = false;
 let cameraOff = false;
 let roomName;
+let nickName = "guest";
 let myPeerConnection;
+let myDataChannel;
 
 let cameras = [];
 let mikes = [];
@@ -23,10 +28,13 @@ let selectedVideoID;
 
 const getDevices = async () => {
   try {
+    camerasSelect.innerHTML = "";
+    mikesSelect.innerHTML = "";
+
     const devices = await navigator.mediaDevices.enumerateDevices();
 
     cameras = devices.filter((device) => device.kind === "videoinput");
-    const currentCamera = myStream.getVideoTracks()[0];
+    const currentCamera = currStream.getVideoTracks()[0];
 
     cameras.forEach((camera) => {
       const option = document.createElement("option");
@@ -39,7 +47,7 @@ const getDevices = async () => {
     });
 
     mikes = devices.filter((device) => device.kind === "audioinput");
-    const currentMike = myStream.getAudioTracks()[0];
+    const currentMike = currStream.getAudioTracks()[0];
 
     mikes.forEach((mike) => {
       const option = document.createElement("option");
@@ -48,7 +56,7 @@ const getDevices = async () => {
       if (currentMike.label === mike.label) {
         option.selected = true;
       }
-      mikeSelect.appendChild(option);
+      mikesSelect.appendChild(option);
     });
 
     if (cameras.length <= 1) {
@@ -97,13 +105,13 @@ const getMedia = async (deviceId) => {
   };
 
   try {
-    myStream = await navigator.mediaDevices.getUserMedia(
+    currStream = await navigator.mediaDevices.getUserMedia(
       deviceId ? deviceConstrains : initialConstrains
     );
-    myVideo.srcObject = myStream;
+    myVideo.srcObject = currStream;
 
-    myStream.getAudioTracks()[0].enabled = !muted;
-    myStream.getVideoTracks()[0].enabled = !cameraOff;
+    currStream.getAudioTracks()[0].enabled = !muted;
+    currStream.getVideoTracks()[0].enabled = !cameraOff;
 
     if (!deviceId) {
       await getDevices();
@@ -113,27 +121,27 @@ const getMedia = async (deviceId) => {
   }
 };
 const handleMuteClick = () => {
-  myStream
+  currStream
     .getAudioTracks()
     .forEach((track) => (track.enabled = !track.enabled));
   if (!muted) {
-    muteBtn.innerText = "Unmute";
+    muteBtn.innerText = "마이크 사용";
     muted = true;
   } else {
-    muteBtn.innerText = "Mute";
+    muteBtn.innerText = "마이크 미사용";
     muted = false;
   }
 };
 
 const handleCameraClick = () => {
-  myStream
+  currStream
     .getVideoTracks()
     .forEach((track) => (track.enabled = !track.enabled));
   if (cameraOff) {
-    cameraBtn.innerText = "Turn Camera Off";
+    cameraBtn.innerText = "카메라 미사용";
     cameraOff = false;
   } else {
-    cameraBtn.innerText = "Turn Camera On";
+    cameraBtn.innerText = "카메라 사용";
     cameraOff = true;
   }
 };
@@ -141,27 +149,68 @@ const handleCameraClick = () => {
 const handleCameraChange = async () => {
   console.log(camerasSelect.value);
   await getMedia(camerasSelect.value);
+
+  if (myPeerConnection) {
+    updateStream();
+  }
 };
 
 const handleMikeChange = async () => {
-  console.log(mikeSelect.value);
-  await getMedia(mikeSelect.value);
+  console.log(mikesSelect.value);
+  await getMedia(mikesSelect.value);
+
+  if (myPeerConnection) {
+    updateStream();
+  }
 };
 
+const updateStream = () => {
+  if (myPeerConnection) {
+    const senders = myPeerConnection.getSenders();
+    const audioTrack = currStream.getAudioTracks()[0];
+    const videoTrack = currStream.getVideoTracks()[0];
+
+    senders[0].replaceTrack(audioTrack);
+    senders[1].replaceTrack(videoTrack);
+  }
+};
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
 
 camerasSelect.addEventListener("input", handleCameraChange);
-mikeSelect.addEventListener("input", handleMikeChange);
+mikesSelect.addEventListener("input", handleMikeChange);
+
+const transSection = (toChatroom) => {
+  if (toChatroom) {
+    waitingroomSection.style.opacity = 0;
+
+    setTimeout(() => {
+      waitingroomSection.style.display = "none";
+      chatroomSection.style.display = "flex";
+      setTimeout(() => {
+        chatroomSection.style.opacity = 1;
+      }, 350);
+    }, 500);
+  } else {
+    chatroomSection.style.opacity = 0;
+
+    setTimeout(() => {
+      waitingroomSection.style.display = "flex";
+      chatroomSection.style.display = "none";
+      setTimeout(() => {
+        waitingroomSection.style.opacity = 1;
+      }, 350);
+    }, 500);
+  }
+};
 
 // Welcome Form (join a room)
 
 const welcome = document.getElementById("welcome");
-const welcomeForm = welcome.querySelector("form");
+const welcomeForm = welcome.querySelector("#join-form");
 
 const initCall = async () => {
-  welcome.hidden = true;
-  call.hidden = false;
+  transSection(true);
   await getMedia();
   makeConnection();
 };
@@ -175,11 +224,127 @@ const handleWelcomeSubmit = async (event) => {
   input.value = "";
 };
 
+const clickJoinRoom = async (event, roomValue) => {
+  roomName = roomValue;
+  await initCall();
+  socket.emit("join_room", roomName);
+};
 welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
+// Chatroom (go to waiting section)
+
+const leaveRoom = () => {
+  transSection(false);
+
+  if (currStream) {
+    currStream.getTracks().forEach((track) => track.stop());
+    currStream = null;
+  }
+
+  socket.emit("leave_room", roomName);
+
+  myDataChannel = null;
+  roomName = "";
+};
+
+const chatLogs = document.getElementById("chatroom-log");
+
+const addMessageChatRoom = (msg, isMine, isLog) => {
+  const div = document.createElement("div");
+  div.id = isLog ? "chat-log" : "chat";
+  const message = document.createElement("bdi");
+  if (!isLog) {
+    div.className = isMine ? "mine" : "other";
+  }
+  message.innerText = msg;
+  div.appendChild(message);
+
+  chatLogs.appendChild(div);
+
+  chatLogs.scrollTop = chatLogs.scrollHeight;
+};
+
+const chatForm = document.getElementById("chatting-form");
+const chatInput = chatForm.querySelector("input");
+
+chatForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  addMessageChatRoom(`${chatInput.value}`, true, false);
+  const message = `${chatInput.value}`;
+  if (myDataChannel) {
+    myDataChannel.send(message);
+  }
+
+  chatInput.value = "";
+});
+backbtn.addEventListener("click", leaveRoom);
+
+// Nickname Form (change nickname)
+const nickname = document.querySelectorAll("#nickname");
+
+nickname.forEach((element) => {
+  const nicknameForm = element.querySelector("#nickname-form");
+  nicknameForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = nicknameForm.querySelector("input");
+    nickName = input.value;
+    socket.emit("change_nickname", nickName);
+    input.value = "";
+  });
+});
+
+const roomList = document.getElementById("room-list");
+const paintRooms = (openRooms) => {
+  roomList.innerHTML = "";
+  openRooms.forEach((room) => {
+    const roomDiv = document.createElement("div");
+    roomDiv.className = "room";
+
+    const roomInfo = document.createElement("div");
+    roomInfo.className = "room--info";
+    const roomHeader = document.createElement("h1");
+    roomHeader.innerText = "방 제목";
+    const roomTitle = document.createElement("span");
+    roomTitle.innerText = room.key;
+    roomInfo.appendChild(roomHeader);
+    roomInfo.appendChild(roomTitle);
+
+    const roomUserInfo = document.createElement("div");
+    roomUserInfo.className = "room--userinfo";
+    const userHeader = document.createElement("h1");
+    userHeader.innerText = "참여 인원";
+    const roomUserCount = document.createElement("span");
+    roomUserCount.innerText = `${room.userCount} / 2`;
+    roomUserInfo.appendChild(userHeader);
+    roomUserInfo.appendChild(roomUserCount);
+
+    roomDiv.appendChild(roomInfo);
+    roomDiv.appendChild(roomUserInfo);
+    roomDiv.value = room.key;
+
+    roomDiv.addEventListener("click", () => {
+      if (room.userCount < 2) {
+        clickJoinRoom(event, roomDiv.value);
+      }
+    });
+    roomList.appendChild(roomDiv);
+  });
+};
 // Socket Code
 
-socket.on("welcome", async () => {
+socket.on("room_change", (openRooms) => {
+  paintRooms(openRooms);
+});
+socket.on("welcome", async (nickname) => {
+  addMessageChatRoom(`${nickname} 님이 입장하셨습니다`, false, true);
+
+  myDataChannel = myPeerConnection.createDataChannel("chat");
+  myDataChannel.addEventListener("message", (event) => {
+    addMessageChatRoom(event.data, false, false);
+  });
+  console.log("made data channel");
+
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
 
@@ -188,6 +353,13 @@ socket.on("welcome", async () => {
 });
 
 socket.on("offer", async (offer) => {
+  myPeerConnection.addEventListener("datachannel", (event) => {
+    myDataChannel = event.channel;
+    myDataChannel.addEventListener("message", (event) => {
+      addMessageChatRoom(event.data, false, false);
+    });
+  });
+
   console.log("received the offer");
   myPeerConnection.setRemoteDescription(offer);
 
@@ -208,16 +380,35 @@ socket.on("ice", (ice) => {
   myPeerConnection.addIceCandidate(ice);
 });
 
+socket.on("leave-room", async (nickname) => {
+  addMessageChatRoom(`${nickname} 님이 퇴장하셨습니다`, false, true);
+  myPeerConnection.close();
+  myDataChannel = null;
+  await makeConnection();
+});
+
 // RTC Code
 
 const makeConnection = () => {
-  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:stun1.l.google.com:19302",
+          "stun:stun2.l.google.com:19302",
+          "stun:stun3.l.google.com:19302",
+          "stun:stun4.l.google.com:19302",
+        ],
+      },
+    ],
+  });
   myPeerConnection.addEventListener("icecandidate", handleIce);
-  myPeerConnection.addEventListener("track", handleAddStream);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
 
-  myStream
+  currStream
     .getTracks()
-    .forEach((track) => myPeerConnection.addTrack(track, myStream));
+    .forEach((track) => myPeerConnection.addTrack(track, currStream));
 };
 
 const handleIce = (data) => {
@@ -226,10 +417,6 @@ const handleIce = (data) => {
 };
 
 const handleAddStream = (data) => {
-  console.log("got an stream from my peer");
-  console.log("Peer's Stream", data.streams[0]);
-  console.log("My Stream", myStream);
-
-  const peerFace = document.getElementById("peerFace");
-  peerFace.srcObject = data.streams[0];
+  const peerFace = document.getElementById("otherVideo");
+  peerFace.srcObject = data.stream;
 };

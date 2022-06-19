@@ -35,12 +35,27 @@ const getCountRoom = (roomName) => {
 
 const onSocketConnection = (socket) => {
   console.log("connetced");
+  socket["nickname"] = "guest";
+
+  socket.emit("room_change", getPublicRooms());
 
   socket.on("join_room", (roomName) => {
     socket.join(roomName);
-    socket.to(roomName).emit("welcome");
+    socket.to(roomName).emit("welcome", socket.nickname);
+    wsServer.sockets.emit("room_change", getPublicRooms());
   });
 
+  socket.on("leave_room", (roomName) => {
+    socket.to(roomName).emit("leave-room", socket.nickname);
+    socket.leave(roomName);
+    wsServer.sockets.emit("room_change", getPublicRooms());
+  });
+
+  socket.on("change_nickname", (nickname) => {
+    console.log(socket.nickname);
+    socket["nickname"] = nickname;
+    console.log(socket.nickname);
+  });
   socket.on("offer", (offer, roomName) => {
     socket.to(roomName).emit("offer", offer);
   });
@@ -51,6 +66,14 @@ const onSocketConnection = (socket) => {
 
   socket.on("ice", (ice, roomName) => {
     socket.to(roomName).emit("ice", ice);
+  });
+
+  socket.on("disconnect", () => {
+    wsServer.sockets.emit("room_change", getPublicRooms());
+  });
+
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((room) => socket.to(room).emit("leave-room"));
   });
 };
 
