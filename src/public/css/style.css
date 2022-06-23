@@ -56,6 +56,7 @@ main > h1 {
 
   width: 30%;
 }
+
 @media (max-width: 450px) {
   #room-list {
     grid-template-columns: repeat(1, minmax(0, 1fr));

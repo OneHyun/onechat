@@ -22,6 +22,7 @@ let myDataChannel;
 
 let cameras = [];
 let mikes = [];
+let allRooms;
 
 let selectedAudioID;
 let selectedVideoID;
@@ -217,11 +218,22 @@ const initCall = async () => {
 
 const handleWelcomeSubmit = async (event) => {
   event.preventDefault();
+
   const input = welcomeForm.querySelector("input");
   roomName = input.value;
-  await initCall();
-  socket.emit("join_room", roomName);
-  input.value = "";
+
+  let canJoin = true;
+  allRooms.forEach((room) => {
+    if (room.key == roomName) {
+      canJoin = room.userCount > 1 ? false : true;
+    }
+  });
+
+  if (canJoin) {
+    await initCall();
+    socket.emit("join_room", roomName);
+    input.value = "";
+  }
 };
 
 const clickJoinRoom = async (event, roomValue) => {
@@ -297,6 +309,7 @@ nickname.forEach((element) => {
 const roomList = document.getElementById("room-list");
 const paintRooms = (openRooms) => {
   roomList.innerHTML = "";
+  allRooms = openRooms;
   openRooms.forEach((room) => {
     const roomDiv = document.createElement("div");
     roomDiv.className = "room";

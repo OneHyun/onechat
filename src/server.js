@@ -3,7 +3,7 @@ import { Server } from "socket.io";
 import express from "express";
 import path from "path";
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const __dirname = path.resolve();
 const app = express();
 
@@ -73,7 +73,9 @@ const onSocketConnection = (socket) => {
   });
 
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) => socket.to(room).emit("leave-room"));
+    socket.rooms.forEach((room) =>
+      socket.to(room).emit("leave-room", socket.nickname)
+    );
   });
 };
 
