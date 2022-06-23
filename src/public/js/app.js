@@ -301,6 +301,8 @@ nickname.forEach((element) => {
     event.preventDefault();
     const input = nicknameForm.querySelector("input");
     nickName = input.value;
+
+    addMessageChatRoom(`닉네임이 ${nickName}로 변경되셨습니다. `, false, true);
     socket.emit("change_nickname", nickName);
     input.value = "";
   });
